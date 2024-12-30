@@ -146,15 +146,6 @@ def up () :
                 cells [i] [pos] = Cell ()
                 pos_score += pow (2, cells [i] [pos - 1]. type)
     max_score = max (max_score, pos_score)
-    for i in range (board_size) :
-        for j in range (board_size) :
-            if cells [i] [j]. type == 0 :
-                cells [i] [j]. frozen = 0
-            else :
-                if cells [i] [j]. merge or cells [i] [j]. move :
-                    cells [i] [j]. frozen = 0
-                else :
-                    cells [i] [j]. frozen = min (max_frozen, cells [i] [j]. frozen + 1)
 
 def left () :
     rotate_clockwise()
@@ -176,6 +167,33 @@ def right () :
     rotate_clockwise()
     up ()
     rotate_clockwise()
+
+def update_frozen () :
+    global cells
+    for i in range (board_size) :
+        for j in range (board_size) :
+            if cells [i] [j]. type == 0 :
+                cells [i] [j]. frozen = 0
+            else :
+                if cells [i] [j]. merge or cells [i] [j]. move :
+                    cells [i] [j]. frozen = 0
+                else :
+                    cells [i] [j]. frozen = min (max_frozen, cells [i] [j]. frozen + 1)
+
+def check_diff () :
+    global cells
+    diff = False
+    for i in range (board_size) :
+        for j in range (board_size) :
+            if cells [i] [j]. type == 0 : continue
+            if cells [i] [j]. move == True or cells [i] [j]. merge == True :
+                diff = True
+    return diff
+
+def update () :
+    if check_diff() :
+        update_frozen()
+        spawn_cell()
 
 def check_game_active () :
     global game_active, win
@@ -206,16 +224,16 @@ while True:
             elif event.type == pygame. KEYDOWN :
                 if event.key == pygame.K_w or event.key == pygame.K_UP:
                     up()
-                    spawn_cell()
+                    update ()
                 elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
                     left()
-                    spawn_cell()
+                    update()
                 elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     down()
-                    spawn_cell()
+                    update()
                 elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                     right()
-                    spawn_cell()
+                    update()
         screen. fill ('white')
         screen. blit (title_surf, title_rect)
         screen. blit (board_surf, board_rect)
